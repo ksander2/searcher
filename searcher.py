@@ -1,5 +1,10 @@
 import argparse
+import sys
+import select
+
+
 from regexfunction import ProcessRegex
+
 
 def sort(list_strs, sort_method, order):
     order_map = {'asc': False, 'desc': True, None: False }
@@ -7,36 +12,62 @@ def sort(list_strs, sort_method, order):
         return sorted(list_strs, reverse = order_map[order] )
     if(sort_method == "freq"):
        return sorted(list_strs, key=list_strs.count, reverse = order_map[order] )
-   
     return list_strs
 
-def create_stat_set(str_list, stat_metod):
+def create_stat_list(str_list, stat_metod):
     stat_set = set()
     if stat_metod == "count":
         for item in str_list:
             count_match = str_list.count(item)
-            str_count_match = str(count_match)
-            stat_set.add(item + " | " + str_count_match)
+            stat_str = '%-30s |   %d' % (item, count_match)
+            stat_set.add(stat_str)
     if stat_metod == "freq":
         size = len(str_list)
         for item in str_list:
-            count_match = round(str_list.count(item)/size, 3)
-            str_count_match = str(count_match)
-            stat_set.add(item + " | " + str_count_match)
-    return stat_set
+            freq_match = str_list.count(item)/size
+            stat_str = '%-30s |   %0.3f' % (item, freq_match)
+            stat_set.add(stat_str)
+    return list(stat_set)
+
+def printCollectionByCount(list_strs, count):
+    if count:
+        if count > len(list_strs):
+            count = len(list_strs)
+        for i in range(0, count):
+            print(list_strs[i])
+    else:
+        for item in list_strs:
+            print(item)
+        
+
+
+if not sys.stdin.isatty():
+     print ("not sys.stdin.isatty")
+else:
+     print ("is  sys.stdin.isatty")
+
+
+try:
+    print(sys.stdin.read())
+except:
+    print('No input')
+
+    
+for line in sys.stdin:
+    print (line)
     
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='search with regex')
 
-parser.add_argument("-u", dest='unique_mathces_arg', action="store_true", help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("-c", dest='count_mathces_arg', action="store_true", help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("-l", dest='count_line_mathces_arg', action ="store_true", help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("-s", dest='sort_method_arg', type=str, default=None, choices=["abc", "freq"], help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("-o", dest='sort_order_arg', type=str, default=None, choices=["asc", "desc"], help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("-n", dest='num_print_rows_arg', type=int, default=None, help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument("--stat", dest='stat_arg', type=str, default=None,choices=["count", "freq"], help="Количество дней, прошедших с даты в названии папки(для удаления)")
-parser.add_argument('regex', metavar='PATTERN', type=str,  help='an integer for the accumulator')
-parser.add_argument('file_name', metavar='FILENAME', type=str,  help='an integer for the accumulator')
+parser.add_argument("-u", dest='unique_mathces_arg', action="store_true", help="List unique matches only")
+parser.add_argument("-c", dest='count_mathces_arg', action="store_true", help="Get total count of found matches")
+parser.add_argument("-l", dest='count_line_mathces_arg', action ="store_true", help="Get total count of lines, where at least one match was found")
+parser.add_argument("-s", dest='sort_method_arg', type=str, default=None, choices=["abc", "freq"], help="Sorting of found matches by alphabet and frequency")
+parser.add_argument("-o", dest='sort_order_arg', type=str, default=None, choices=["asc", "desc"], help="Sorting order")
+parser.add_argument("-n", dest='num_print_rows_arg', metavar='COUNT ROWS', type=int, default=None, help="List first N matches")
+parser.add_argument("--stat", dest='stat_arg', type=str, default=None,choices=["count", "freq"], help="List unique matches with statistic")
+parser.add_argument('regex', metavar='PATTERN', type=str,  help='Filter PATTERN')
+parser.add_argument('file_name', metavar='FILENAME', default=None, type=str,  help='file name')
 
 args = parser.parse_args()
 
@@ -66,8 +97,8 @@ if args.count_mathces_arg and args.unique_mathces_arg:
 else:
     if args.unique_mathces_arg:
         set_str = ProcessRegex.unique_matches(regex, data_strings)
-        for item in set_str:
-            print(item)
+        set_str = sort(set_str, args.sort_method_arg, args.sort_order_arg)
+        printCollectionByCount(set_str, args.num_print_rows_arg)
     
     if args.count_mathces_arg:
         count = ProcessRegex.count_matches(regex, data_strings)
@@ -81,11 +112,7 @@ if not args.count_mathces_arg and not args.unique_mathces_arg and not args.count
     all_matches = ProcessRegex.all_matches(regex, data_strings)
     all_matches = sort(all_matches, args.sort_method_arg, args.sort_order_arg)
     if args.stat_arg:
-        all_matches= create_stat_set(all_matches, args.stat_arg)      
-    for item in all_matches:
-        print(item)
+        all_matches= create_stat_list(all_matches, args.stat_arg)      
         
-ggg = "%-10d".format(25)
-sd = '%-12d sdsdsds' % 2770
-a = 0
+    printCollectionByCount(all_matches, args.num_print_rows_arg)
         
