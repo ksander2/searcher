@@ -4,15 +4,17 @@ import select
 
 
 from regexfunction import ProcessRegex
+from re import search
 
 
 def sort(list_strs, sort_method, order):
     order_map = {'asc': False, 'desc': True, None: False }
+    sorted_list = []
     if(sort_method == "abc"):
-        return sorted(list_strs, reverse = order_map[order] )
+        sorted_list = sorted(list_strs, reverse = order_map[order] )
     if(sort_method == "freq"):
-       return sorted(list_strs, key=list_strs.count, reverse = order_map[order] )
-    return list_strs
+       sorted_list = sorted(list_strs, key=list_strs.count, reverse=order_map[order])
+    return sorted_list
 
 def create_stat_list(str_list, stat_metod):
     stat_set = set()
@@ -47,14 +49,14 @@ else:
      print ("is  sys.stdin.isatty")
 
 
-try:
-    print(sys.stdin.read())
-except:
-    print('No input')
+#try:
+  #  print(sys.stdin.read())
+#except:
+#    print('No input')
 
     
-for line in sys.stdin:
-    print (line)
+#for line in sys.stdin:
+ #   print (line)
     
 
 parser = argparse.ArgumentParser(description='search with regex')
@@ -80,7 +82,6 @@ try:
 except Exception as ex:
     print(ex)
     quit()
-
 
 data_strings = [] 
 
@@ -115,4 +116,3 @@ if not args.count_mathces_arg and not args.unique_mathces_arg and not args.count
         all_matches= create_stat_list(all_matches, args.stat_arg)      
         
     printCollectionByCount(all_matches, args.num_print_rows_arg)
-        
