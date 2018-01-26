@@ -1,20 +1,10 @@
 import argparse
 import sys
 import select
-
+from sortfunction import Sorter
 
 from regexfunction import ProcessRegex
 from re import search
-
-
-def sort(list_strs, sort_method, order):
-    order_map = {'asc': False, 'desc': True, None: False }
-    sorted_list = []
-    if(sort_method == "abc"):
-        sorted_list = sorted(list_strs, reverse = order_map[order] )
-    if(sort_method == "freq"):
-       sorted_list = sorted(list_strs, key=list_strs.count, reverse=order_map[order])
-    return sorted_list
 
 def create_stat_list(str_list, stat_metod):
     stat_set = set()
@@ -43,21 +33,8 @@ def printCollectionByCount(list_strs, count):
         
 
 
-if not sys.stdin.isatty():
-     print ("not sys.stdin.isatty")
-else:
-     print ("is  sys.stdin.isatty")
-
-
-#try:
-  #  print(sys.stdin.read())
-#except:
-#    print('No input')
-
-    
-#for line in sys.stdin:
- #   print (line)
-    
+isReadyStdin = not sys.stdin.isatty()
+#isReadyStdin = sys.stdin.isatty()
 
 parser = argparse.ArgumentParser(description='search with regex')
 
@@ -69,19 +46,25 @@ parser.add_argument("-o", dest='sort_order_arg', type=str, default=None, choices
 parser.add_argument("-n", dest='num_print_rows_arg', metavar='COUNT ROWS', type=int, default=None, help="List first N matches")
 parser.add_argument("--stat", dest='stat_arg', type=str, default=None,choices=["count", "freq"], help="List unique matches with statistic")
 parser.add_argument('regex', metavar='PATTERN', type=str,  help='Filter PATTERN')
-parser.add_argument('file_name', metavar='FILENAME', default=None, type=str,  help='file name')
 
+if isReadyStdin == False:
+    parser.add_argument('file_name', metavar='FILENAME', default=None, type=str,  help='file name')
+    
 args = parser.parse_args()
 
-data_strings_temp = []
+data_strings_temp = [] 
 
-try:
-    with open(args.file_name, "r") as data_file:
-        data_strings_temp = data_file.readlines()
-        
-except Exception as ex:
-    print(ex)
-    quit()
+if isReadyStdin == False:
+    try:
+        with open(args.file_name, "r") as data_file:
+            data_strings_temp = data_file.readlines()
+            
+    except Exception as ex:
+        print(ex)
+        quit()
+else:
+    for line in sys.stdin:
+        data_strings_temp.append(line)
 
 data_strings = [] 
 
@@ -90,7 +73,7 @@ for item in data_strings_temp:
     data_strings.append(item.strip()) 
     
 #strip regex string    
-regex = args.regex[1:-1]
+regex = args.regex
 
 if args.count_mathces_arg and args.unique_mathces_arg:
     count = ProcessRegex.count_unique_matches(regex, data_strings)
@@ -98,7 +81,7 @@ if args.count_mathces_arg and args.unique_mathces_arg:
 else:
     if args.unique_mathces_arg:
         set_str = ProcessRegex.unique_matches(regex, data_strings)
-        set_str = sort(set_str, args.sort_method_arg, args.sort_order_arg)
+        set_str = Sorter.sort(set_str, args.sort_method_arg, args.sort_order_arg)
         printCollectionByCount(set_str, args.num_print_rows_arg)
     
     if args.count_mathces_arg:
@@ -111,8 +94,9 @@ if args.count_line_mathces_arg:
 
 if not args.count_mathces_arg and not args.unique_mathces_arg and not args.count_line_mathces_arg:
     all_matches = ProcessRegex.all_matches(regex, data_strings)
-    all_matches = sort(all_matches, args.sort_method_arg, args.sort_order_arg)
+    all_matches = Sorter.sort(all_matches, args.sort_method_arg, args.sort_order_arg)
     if args.stat_arg:
         all_matches= create_stat_list(all_matches, args.stat_arg)      
+        all_matches = Sorter.sort(all_matches, args.sort_method_arg, args.sort_order_arg)
         
     printCollectionByCount(all_matches, args.num_print_rows_arg)

@@ -1,5 +1,6 @@
 import unittest
 from regexfunction import ProcessRegex
+from sortfunction import Sorter
 
 class TestStringMethods(unittest.TestCase):
     
@@ -10,14 +11,14 @@ class TestStringMethods(unittest.TestCase):
             "dfdfdfdfd",
             "an1_sobev90@gmail.ru   an1_aaassobev90@gmail.ru  dasdsad an1_aaccccssobev90@gmail.ru",
             "fn1_sobev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru",
             "gn1_sobev90@gmail.ru   an1_aac1ssobev90@gmail.ru",
             "hn1_sobev90@gmail.ru",
             "an1_sobev90@gmai1l.ru",
@@ -25,8 +26,8 @@ class TestStringMethods(unittest.TestCase):
             "an1_so11111bev90@gmai1l.ru",
             "an1_sobev90@gmai1l.ru",
             "an1_sobev90@gmai1l.ru",
-            "bn.obev90@gmail.ru",
-            "bn.obev90@gmail.ru"
+            "bnobev90@gmail.ru",
+            "bnobev90@gmail.ru"
             ]
         
         self.regex1 = "\w+@[\w.-_]+"
@@ -51,14 +52,17 @@ class TestStringMethods(unittest.TestCase):
           
     def test_count_line_Mathces(self):
         count = ProcessRegex.count_line_matches(self.regex1, self.list_tring)
-        self.assertEqual(count, 10)
+        self.assertEqual(count, 20)
         
-    #def test_sort(self):
-       # all_m = ProcessRegex.all_matches(self.regex1, self.list_tring)
-       # list_s = searcher.sort(all_m, "abc", "desc")
-       # self.assertEqual(list_s[4], "an1_so11111bev90@gmai1l.ru")
-       # self.assertEqual(list_s[14], "obev90@gmail.ru")    
+    def test_sort(self):
+        all_m = ProcessRegex.all_matches(self.regex1, self.list_tring)
+        list_s = Sorter.sort(all_m, "abc", "asc")
+        self.assertEqual(list_s[3], "an1_so11111bev90@gmai1l.ru")
+        self.assertEqual(list_s[14], "bnobev90@gmail.ru")
+        list_s = Sorter.sort(all_m, "abc", "desc")
+        self.assertEqual(list_s[0], "hn1_sobev90@gmail.ru")
+        list_s = Sorter.sort(all_m, "freq", "desc")
+        self.assertEqual(list_s[0], "bnobev90@gmail.ru")    
     
-
 if __name__ == '__main__':
     unittest.main()
