@@ -2,30 +2,19 @@ import re
 
 
 class ProcessRegex:
+    
     @staticmethod
     def unique_matches(regex_str, list_str):
-        set_str = set()
-        for item in list_str:
-            s_list = re.findall(regex_str, item, 0)
-            for match in s_list:
-                set_str.add(match)
+        set_str = set(ProcessRegex.all_matches(regex_str, list_str))
         return list(set_str)
 
     @staticmethod
     def count_matches(regex_str, list_str):
-        all_matches = []
-        for item in list_str:
-            s_list = re.findall(regex_str, item, 0)
-            all_matches.extend(s_list)
-        return len(all_matches)
+        return len(ProcessRegex.all_matches(regex_str, list_str))
 
     @staticmethod
     def count_unique_matches(regex_str, list_str):
-        set_str = set()
-        for item in list_str:
-            s_list = re.findall(regex_str, item, 0)
-            for match in s_list:
-                set_str.add(match)
+        set_str = set(ProcessRegex.all_matches(regex_str, list_str))
         return len(set_str)
 
     @staticmethod

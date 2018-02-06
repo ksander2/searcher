@@ -1,46 +1,33 @@
 import argparse
-import sys
-from sortfunction import Sorter
+from sys import stdin
+
 from regexfunction import ProcessRegex
 
 from searchengine import SearchEngine
 from searchengine import MethodSearch
 
+from statengine import StatEngine
+from statengine import MethodStat
 
+from sorter import Sorter
+from sorter import SortOrder
+from sorter import SortMethod
 
+sort_method_map = {}
+sort_method_map['abc'] = SortMethod.abc
+sort_method_map['freq'] = SortMethod.freq
 
+sort_order_map = {}
+sort_order_map['asc'] = SortOrder.asc
+sort_order_map['desc'] = SortOrder.desc
 
-def create_stat_list(str_list, stat_metod):
-    stat_list = []
-    if stat_metod == "count":
-        for item in str_list:
-            count_match = str_list.count(item)
-            stat_str = '%-30s |   %d' % (item, count_match)
-            if stat_list.count(stat_str) == 0:
-                stat_list.append(stat_str)
-    if stat_metod == "freq":
-        size = len(str_list)
-        for item in str_list:
-            freq_match = str_list.count(item)/size
-            stat_str = '%-30s |   %0.3f' % (item, freq_match)
-            if stat_list.count(stat_str) == 0:
-                stat_list.append(stat_str)
-    return stat_list
-
-
-def printCollectionByCount(list_strs, count):
-    if count:
-        if count > len(list_strs):
-            count = len(list_strs)
-        for i in range(0, count):
-            print(list_strs[i])
-    else:
-        for item in list_strs:
-            print(item)
+stat_method_map = {}
+stat_method_map['count'] = MethodStat.count
+stat_method_map['freq'] = MethodStat.freq
 
 if __name__ == "__main__":
             
-    #isReadyStdin = not sys.stdin.isatty()
+    isReadyStdin = not stdin.isatty()
     
     parser = argparse.ArgumentParser(description='search with regex')
     
@@ -91,28 +78,29 @@ if __name__ == "__main__":
                         type=str,  
                         help='Filter PATTERN')
     
-    #if not isReadyStdin:
-    parser.add_argument('file_name', 
-                        metavar='FILENAME', 
-                        default=None, 
-                        type=str,  
-                        help='file name')
+    if not isReadyStdin:
+        parser.add_argument('file_name', 
+                            metavar='FILENAME', 
+                            default=None, 
+                            type=str,  
+                            help='file name')
         
     args = parser.parse_args()
     
     data_strings_temp = [] 
     
-    #if not isReadyStdin:
-    try:
-        with open(args.file_name, "r") as data_file:
-            data_strings_temp = data_file.readlines()
-            
-    except Exception as ex:
-        print(ex)
-        quit()
-    #else:
-    #    for line in sys.stdin:
-    #        data_strings_temp.append(line)
+    if not isReadyStdin:
+        try:
+            with open(args.file_name, "r") as data_file:
+                for line in data_file:
+                    data_strings_temp.append(line)
+               
+        except Exception as ex:
+            print(ex)
+            quit()
+    else:
+        for line in stdin:
+            data_strings_temp.append(line)
     
     data_strings = [] 
     
@@ -120,8 +108,10 @@ if __name__ == "__main__":
         data_strings.append(item.strip()) 
           
     regex = args.regex
-    
     method_search_state = MethodSearch.all
+    method_sorting = SortMethod.abc
+    sortOrder = SortOrder.asc
+    stat_method_state = MethodStat.count
     
     if args.count_mathces_arg and args.unique_mathces_arg:
         method_search_state = MethodSearch.unique_count
@@ -133,9 +123,17 @@ if __name__ == "__main__":
     if args.count_line_mathces_arg:
         method_search_state = MethodSearch.line
 
-    s_e = SearchEngine(regex, method_search_state, None)
+    if args.sort_method_arg:
+        method_sorting = sort_method_map[args.sort_method_arg]
     
-    print(s_e.begin(data_strings, args.num_print_rows_arg))
+    if args.sort_order_arg:
+        sortOrder = sort_order_map[args.sort_order_arg]
+
+    sorter = Sorter(method_sorting,sortOrder)
     
-    
-    
+    if args.stat_arg:
+        stat_engine = StatEngine(regex, stat_method_map[args.stat_arg], sorter)
+        print(stat_engine.begin(data_strings, args.num_print_rows_arg))
+    else:
+        search_engine = SearchEngine(regex, method_search_state, sorter)
+        print(search_engine.begin(data_strings, args.num_print_rows_arg))

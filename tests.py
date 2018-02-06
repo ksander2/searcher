@@ -1,6 +1,8 @@
 import unittest
 from regexfunction import ProcessRegex
-from sortfunction import Sorter
+from sorter import Sorter
+from sorter import SortOrder
+from sorter import SortMethod
 
 class TestStringMethods(unittest.TestCase):
     
@@ -56,12 +58,17 @@ class TestStringMethods(unittest.TestCase):
         
     def test_sort(self):
         all_m = ProcessRegex.all_matches(self.regex1, self.list_tring)
-        list_s = Sorter.sort(all_m, "abc", "asc")
+        sorter = Sorter(SortMethod.abc, SortOrder.asc)
+        list_s = sorter.beginSorting(all_m)
         self.assertEqual(list_s[3], "an1_so11111bev90@gmai1l.ru")
         self.assertEqual(list_s[14], "bnobev90@gmail.ru")
-        list_s = Sorter.sort(all_m, "abc", "desc")
+        
+        sorter = Sorter(SortMethod.abc, SortOrder.desc)
+        list_s = sorter.beginSorting(all_m)
         self.assertEqual(list_s[0], "hn1_sobev90@gmail.ru")
-        list_s = Sorter.sort(all_m, "freq", "desc")
+        
+        sorter = Sorter(SortMethod.freq, SortOrder.asc)
+        list_s = sorter.beginSorting(all_m)
         self.assertEqual(list_s[0], "bnobev90@gmail.ru")    
     
 if __name__ == '__main__':

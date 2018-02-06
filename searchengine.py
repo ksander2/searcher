@@ -1,6 +1,7 @@
 from regexfunction import ProcessRegex
 from enum import Enum
 
+
 class MethodSearch(Enum):
     all = 1
     unique = 2
@@ -14,20 +15,19 @@ class SearchEngine:
           self.method = method
           self.sorter = sorter
  
-    
     def begin(self, list_str, num_rows ):
         out_str = ""
-
-            
+ 
         if self.method == MethodSearch.unique_count:
             count = ProcessRegex.count_unique_matches(self.regex, list_str)
             out_str = "Count unique matches: " + str(count)
             
         if self.method == MethodSearch.unique:
-            set_str = ProcessRegex.unique_matches(self.regex, list_str)
+            list_str = ProcessRegex.unique_matches(self.regex, list_str)
             if num_rows:
-                set_str = set_str[:num_rows]      
-            out_str = "\n".join(set_str)
+                list_str = self.__trimCollectionByCount(list_str, num_rows)   
+            list_str = self.sorter.beginSorting(list_str)      
+            out_str = "\n".join(list_str)
             
         if self.method == MethodSearch.count:
             count = ProcessRegex.count_matches(self.regex, list_str)
@@ -38,20 +38,13 @@ class SearchEngine:
             out_str = "Count line matches: " + str(count)
             
         if self.method == MethodSearch.all:
-            set_str = ProcessRegex.all_matches(self.regex, list_str)
+            list_str = ProcessRegex.all_matches(self.regex, list_str)
             if num_rows:
-                set_str = set_str[:num_rows]  
-            out_str = "\n".join(set_str)
+                list_str = self.__trimCollectionByCount(list_str, num_rows)  
+            list_str = self.sorter.beginSorting(list_str)
+            out_str = "\n".join(list_str)
             
         return out_str
     
-    def printCollectionByCount(list_strs, count):
-        if count:
-            if count > len(list_strs):
-                count = len(list_strs)
-            for i in range(0, count):
-                print(list_strs[i])
-        else:
-            for item in list_strs:
-                print(item)
-     
+    def __trimCollectionByCount(self, collection, count):
+         return collection[:count]
